@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Upload, Download, FileSpreadsheet, Check, AlertCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
-export default function ExcelManagerModal({ isOpen, onClose, compareData, onImportData }) {
+export default function ExcelManagerModal({ isOpen, onClose, activeTab, compareData, percentData, onImportData }) {
   const [importStatus, setImportStatus] = useState(null);
 
   if (!isOpen) return null;
@@ -11,6 +11,7 @@ export default function ExcelManagerModal({ isOpen, onClose, compareData, onImpo
     try {
       const wb = XLSX.utils.book_new();
 
+      // Sheet 1: Compare Value
       const compareRows = compareData.map(item => ({
         'ชื่อสินค้า (Item)': item.name,
         'ปริมาณ (Qty)': item.qty,
@@ -23,8 +24,20 @@ export default function ExcelManagerModal({ isOpen, onClose, compareData, onImpo
       const wsCompare = XLSX.utils.json_to_sheet(compareRows);
       XLSX.utils.book_append_sheet(wb, wsCompare, 'Value Comparison');
 
-      XLSX.writeFile(wb, `Compare_Value_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
-      setImportStatus({ type: 'success', message: 'ส่งออกไฟล์ Excel (.xlsx) สำเร็จ!' });
+      // Sheet 2: Percentage Calculation
+      const percentRows = percentData.map(item => ({
+        'Label / รายการ': item.label,
+        'Total (ค่าเต็ม)': item.total,
+        'Result (ค่าที่ได้)': item.result,
+        'Percentage (%)': item.total ? ((item.result * 100) / item.total).toFixed(2) + '%' : '0%',
+        'Summary 1': `${item.result} is ${item.total ? ((item.result * 100) / item.total).toFixed(2) : 0}% of ${item.total}`,
+        'Summary 2': `or ${item.total ? ((item.result * 100) / item.total).toFixed(2) : 0}% of ${item.total} is ${item.result}`
+      }));
+      const wsPercent = XLSX.utils.json_to_sheet(percentRows);
+      XLSX.utils.book_append_sheet(wb, wsPercent, 'Percentage Calculation');
+
+      XLSX.writeFile(wb, `Excel_Web_Suite_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+      setImportStatus({ type: 'success', message: 'ส่งออกไฟล์ Excel (.xlsx) รวม 2 แผ่นงานสำเร็จ!' });
     } catch (err) {
       setImportStatus({ type: 'error', message: 'เกิดข้อผิดพลาดขณะส่งออกไฟล์: ' + err.message });
     }
@@ -40,14 +53,17 @@ export default function ExcelManagerModal({ isOpen, onClose, compareData, onImpo
         const bstr = evt.target.result;
         const wb = XLSX.read(bstr, { type: 'binary' });
         
-        const sheetName = wb.SheetNames[0];
-        const ws = wb.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json(ws);
+        let count = 0;
+        wb.SheetNames.forEach(sheetName => {
+          const ws = wb.Sheets[sheetName];
+          const json = XLSX.utils.sheet_to_json(ws);
+          if (json && json.length > 0) {
+            onImportData(sheetName, json);
+            count++;
+          }
+        });
         
-        if (json && json.length > 0) {
-          onImportData(json);
-          setImportStatus({ type: 'success', message: `นำเข้าข้อมูลเปรียบเทียบความคุ้มค่าสำเร็จ (${json.length} รายการ)!` });
-        }
+        setImportStatus({ type: 'success', message: `นำเข้าข้อมูลสำเร็จ (${count} แผ่นงาน)!` });
       } catch (err) {
         setImportStatus({ type: 'error', message: 'ไม่สามารถอ่านไฟล์ Excel ได้: ' + err.message });
       }
@@ -68,12 +84,12 @@ export default function ExcelManagerModal({ isOpen, onClose, compareData, onImpo
         </button>
 
         <div className="flex items-center space-x-3 mb-6">
-          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+          <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400">
             <FileSpreadsheet className="w-6 h-6" />
           </div>
           <div>
             <h3 className="text-lg font-bold text-white">จัดการไฟล์ Excel (.xlsx)</h3>
-            <p className="text-xs text-slate-400">ส่งออกหรือนำเข้าข้อมูลตารางเปรียบเทียบความคุ้มค่า</p>
+            <p className="text-xs text-slate-400">ส่งออกหรือนำเข้าข้อมูลกับไฟล์ Microsoft Excel</p>
           </div>
         </div>
 
@@ -94,11 +110,11 @@ export default function ExcelManagerModal({ isOpen, onClose, compareData, onImpo
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-sm font-bold text-slate-200">ส่งออกเป็นไฟล์ Excel</h4>
-                <p className="text-xs text-slate-400">ดาวน์โหลดตารางเปรียบเทียบพร้อมผลคำนวณ</p>
+                <p className="text-xs text-slate-400">ดาวน์โหลดตารางเปรียบเทียบและเปอร์เซ็นต์</p>
               </div>
               <button
                 onClick={handleExport}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 shadow-lg shadow-amber-500/25 flex items-center space-x-1.5"
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white shadow-lg shadow-indigo-500/25 flex items-center space-x-1.5"
               >
                 <Download className="w-4 h-4" />
                 <span>ดาวน์โหลด .xlsx</span>
@@ -109,10 +125,10 @@ export default function ExcelManagerModal({ isOpen, onClose, compareData, onImpo
           {/* Import Section */}
           <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
             <h4 className="text-sm font-bold text-slate-200 mb-1">นำเข้าไฟล์ Excel (.xlsx / .csv)</h4>
-            <p className="text-xs text-slate-400 mb-3">เลือกไฟล์ Excel (เช่น Cal - Compare value.xlsx) เพื่อโหลดเข้าสู่ตาราง</p>
+            <p className="text-xs text-slate-400 mb-3">เลือกไฟล์ Excel เพื่อนำเข้าตารางข้อมูล</p>
 
-            <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-700 hover:border-amber-500 rounded-xl cursor-pointer bg-slate-900/50 hover:bg-slate-800/40 transition-all">
-              <Upload className="w-8 h-8 text-amber-400 mb-2" />
+            <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-700 hover:border-purple-500 rounded-xl cursor-pointer bg-slate-900/50 hover:bg-slate-800/40 transition-all">
+              <Upload className="w-8 h-8 text-purple-400 mb-2" />
               <span className="text-xs font-semibold text-slate-200">คลิกเพื่อเลือกไฟล์ หรือ ลากไฟล์มาวางที่นี่</span>
               <span className="text-[11px] text-slate-500 mt-1">รองรับไฟล์ .xlsx, .xls, .csv</span>
               <input
