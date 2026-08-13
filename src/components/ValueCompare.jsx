@@ -248,12 +248,19 @@ export default function ValueCompare({ data, setData }) {
                       />
                     </td>
                     <td className="py-3 px-4">
-                      <input
-                        type="number"
-                        value={item.qty}
-                        onChange={(e) => handleUpdate(item.id, 'qty', e.target.value)}
-                        className="w-full bg-slate-950/50 border border-slate-700/80 rounded-lg px-3 py-1.5 text-slate-100 focus:outline-none focus:border-amber-500 text-sm"
-                      />
+                      <div className="flex flex-col">
+                        <input
+                          type="number"
+                          value={item.qty}
+                          onChange={(e) => handleUpdate(item.id, 'qty', e.target.value)}
+                          className="w-full bg-slate-950/50 border border-slate-700/80 rounded-lg px-3 py-1.5 text-slate-100 focus:outline-none focus:border-amber-500 text-sm"
+                        />
+                        {item.pack > 1 && (
+                          <span className="text-[10px] text-amber-500/80 font-mono mt-1 px-1">
+                            = {item.totalQty.toLocaleString()} {item.unit}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 px-4">
                       <input
