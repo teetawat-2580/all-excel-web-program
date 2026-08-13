@@ -55,6 +55,7 @@ export default function PercentageCalc({ data, setData }) {
     // Summary strings exactly matching Excel CONCATENATE formula
     const summary1 = `${result} is ${pctOfTotal.toFixed(2)}% of ${total}`;
     const summary2 = `or ${pctOfTotal.toFixed(2)}% of ${total} is ${result}`;
+    const summary3 = `Diff: ${isImproved ? 'Improved' : 'Decreased'} by ${diffPct.toFixed(2)}% (from ${total} to ${result})`;
 
     return {
       ...item,
@@ -257,6 +258,7 @@ export default function PercentageCalc({ data, setData }) {
                     <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800 text-xs space-y-1">
                       <div className="text-purple-300 font-mono font-bold">{item.summary1}</div>
                       <div className="text-slate-400 font-mono text-[11px]">{item.summary2}</div>
+                      <div className={`font-mono text-[11px] font-semibold ${item.isImproved ? 'text-emerald-400' : 'text-amber-400'}`}>{item.summary3}</div>
                     </div>
                   </td>
                   <td className="py-3 px-4 text-center">

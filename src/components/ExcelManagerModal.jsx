@@ -31,7 +31,8 @@ export default function ExcelManagerModal({ isOpen, onClose, activeTab, compareD
         'Result (ค่าที่ได้)': item.result,
         'Percentage (%)': item.total ? ((item.result * 100) / item.total).toFixed(2) + '%' : '0%',
         'Summary 1': `${item.result} is ${item.total ? ((item.result * 100) / item.total).toFixed(2) : 0}% of ${item.total}`,
-        'Summary 2': `or ${item.total ? ((item.result * 100) / item.total).toFixed(2) : 0}% of ${item.total} is ${item.result}`
+        'Summary 2': `or ${item.total ? ((item.result * 100) / item.total).toFixed(2) : 0}% of ${item.total} is ${item.result}`,
+        'Summary 3': `Diff: ${item.result >= item.total ? 'Improved' : 'Decreased'} by ${item.total ? (Math.abs(item.total - item.result) * 100 / item.total).toFixed(2) : 0}% (from ${item.total} to ${item.result})`
       }));
       const wsPercent = XLSX.utils.json_to_sheet(percentRows);
       XLSX.utils.book_append_sheet(wb, wsPercent, 'Percentage Calculation');
