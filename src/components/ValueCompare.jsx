@@ -6,9 +6,9 @@ export default function ValueCompare({ data, setData }) {
   const [calcMode, setCalcMode] = useState('unit_per_baht');
 
   const defaultItems = [
-    { id: 1, name: 'สินค้า A (แพ็คใหญ่ 6x1500g)', qty: 9000, price: 1229, unit: 'กรัม (g)', remark: 'คุ้มค่าสำหรับร้านค้า' },
-    { id: 2, name: 'สินค้า B (ถุงเดี่ยว 800g)', qty: 800, price: 130, unit: 'กรัม (g)', remark: 'เหมาะสำหรับใช้ทันที' },
-    { id: 3, name: 'สินค้า C (โปรโมชั่นพิเศษ 2500g)', qty: 2500, price: 390, unit: 'กรัม (g)', remark: 'แถมฟรี 100g' }
+    { id: 1, name: 'สินค้า A (แพ็คใหญ่ 6x1500g)', qty: 1500, pack: 6, price: 1229, unit: 'กรัม (g)', remark: 'คุ้มค่าสำหรับร้านค้า' },
+    { id: 2, name: 'สินค้า B (ถุงเดี่ยว 800g)', qty: 800, pack: 1, price: 130, unit: 'กรัม (g)', remark: 'เหมาะสำหรับใช้ทันที' },
+    { id: 3, name: 'สินค้า C (โปรโมชั่นพิเศษ 2500g)', qty: 2500, pack: 1, price: 390, unit: 'กรัม (g)', remark: 'แถมฟรี 100g' }
   ];
 
   const items = data && data.length > 0 ? data : defaultItems;
@@ -28,6 +28,7 @@ export default function ValueCompare({ data, setData }) {
       id: Date.now(),
       name: `สินค้าเทียบรายการที่ ${items.length + 1}`,
       qty: 1000,
+      pack: 1,
       price: 150,
       unit: 'กรัม (g)',
       remark: ''
@@ -47,12 +48,16 @@ export default function ValueCompare({ data, setData }) {
   // Calculations
   const calculatedItems = items.map(item => {
     const qty = parseFloat(item.qty) || 0;
+    const pack = parseFloat(item.pack) || 1;
+    const totalQty = qty * pack;
     const price = parseFloat(item.price) || 0;
-    const unitPerBaht = price > 0 ? qty / price : 0;
-    const bahtPerUnit = qty > 0 ? price / qty : 0;
+    const unitPerBaht = price > 0 ? totalQty / price : 0;
+    const bahtPerUnit = totalQty > 0 ? price / totalQty : 0;
     return {
       ...item,
       qty,
+      pack,
+      totalQty,
       price,
       unitPerBaht,
       bahtPerUnit
@@ -71,7 +76,7 @@ export default function ValueCompare({ data, setData }) {
         bestId = item.id;
       }
     } else {
-      if (item.bahtPerUnit < minCost && item.qty > 0 && item.price > 0) {
+      if (item.bahtPerUnit < minCost && item.totalQty > 0 && item.price > 0) {
         minCost = item.bahtPerUnit;
         bestId = item.id;
       }
@@ -161,7 +166,7 @@ export default function ValueCompare({ data, setData }) {
               <div className="mt-4 pt-3 border-t border-slate-800/80 space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-slate-400">ปริมาณรวม:</span>
-                  <span className="text-sm font-semibold text-slate-200">{item.qty.toLocaleString()} {item.unit}</span>
+                  <span className="text-sm font-semibold text-slate-200">{item.totalQty.toLocaleString()} {item.unit}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-slate-400">ราคาซื้อ:</span>
@@ -202,7 +207,8 @@ export default function ValueCompare({ data, setData }) {
             <thead>
               <tr className="bg-slate-950/80 text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
                 <th className="py-3.5 px-4">ชื่อสินค้า / รายการ</th>
-                <th className="py-3.5 px-4 w-36">ปริมาณ (Qty)</th>
+                <th className="py-3.5 px-4 w-28">แพ็ค (Pack)</th>
+                <th className="py-3.5 px-4 w-32">ปริมาณ (Qty)</th>
                 <th className="py-3.5 px-4 w-36">ราคา (THB)</th>
                 <th className="py-3.5 px-4 w-32">หน่วย</th>
                 <th className="py-3.5 px-4 text-right w-44">
@@ -232,6 +238,14 @@ export default function ValueCompare({ data, setData }) {
                           className="w-full bg-slate-950/50 border border-slate-700/80 rounded-lg px-3 py-1.5 text-slate-100 focus:outline-none focus:border-amber-500 text-sm"
                         />
                       </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <input
+                        type="number"
+                        value={item.pack}
+                        onChange={(e) => handleUpdate(item.id, 'pack', e.target.value)}
+                        className="w-full bg-slate-950/50 border border-slate-700/80 rounded-lg px-3 py-1.5 text-slate-100 focus:outline-none focus:border-amber-500 text-sm"
+                      />
                     </td>
                     <td className="py-3 px-4">
                       <input

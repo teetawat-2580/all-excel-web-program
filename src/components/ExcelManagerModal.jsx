@@ -12,15 +12,24 @@ export default function ExcelManagerModal({ isOpen, onClose, activeTab, compareD
       const wb = XLSX.utils.book_new();
 
       // Sheet 1: Compare Value
-      const compareRows = compareData.map(item => ({
-        'ชื่อสินค้า (Item)': item.name,
-        'ปริมาณ (Qty)': item.qty,
-        'ราคา (Price THB)': item.price,
-        'หน่วย (Unit)': item.unit,
-        'ปริมาณ/1 บาท (Units/THB)': item.qty && item.price ? (item.qty / item.price).toFixed(3) : 0,
-        'ราคา/1 หน่วย (THB/Unit)': item.qty && item.price ? (item.price / item.qty).toFixed(4) : 0,
-        'หมายเหตุ (Remark)': item.remark || ''
-      }));
+      const compareRows = compareData.map(item => {
+        const qty = parseFloat(item.qty) || 0;
+        const pack = parseFloat(item.pack) || 1;
+        const totalQty = qty * pack;
+        const price = parseFloat(item.price) || 0;
+        
+        return {
+          'ชื่อสินค้า (Item)': item.name,
+          'แพ็ค (Pack)': pack,
+          'ปริมาณต่อแพ็ค (Qty/Pack)': qty,
+          'ปริมาณรวม (Total Qty)': totalQty,
+          'ราคา (Price THB)': price,
+          'หน่วย (Unit)': item.unit,
+          'ปริมาณ/1 บาท (Units/THB)': totalQty && price ? (totalQty / price).toFixed(3) : 0,
+          'ราคา/1 หน่วย (THB/Unit)': totalQty && price ? (price / totalQty).toFixed(4) : 0,
+          'หมายเหตุ (Remark)': item.remark || ''
+        };
+      });
       const wsCompare = XLSX.utils.json_to_sheet(compareRows);
       XLSX.utils.book_append_sheet(wb, wsCompare, 'Value Comparison');
 

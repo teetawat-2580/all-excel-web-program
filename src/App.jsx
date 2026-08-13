@@ -29,7 +29,8 @@ export default function App() {
       const mapped = jsonRows.map((row, idx) => ({
         id: Date.now() + idx,
         name: row['ชื่อสินค้า (Item)'] || row['Ingredient'] || row['Item'] || row['ชื่อสินค้า'] || `สินค้า ${idx+1}`,
-        qty: parseFloat(row['ปริมาณ (Qty)'] || row['Qty'] || row['ปริมาณ']) || 1000,
+        pack: parseFloat(row['แพ็ค (Pack)'] || row['Pack'] || row['แพ็ค']) || 1,
+        qty: parseFloat(row['ปริมาณต่อแพ็ค (Qty/Pack)'] || row['ปริมาณ (Qty)'] || row['Qty'] || row['ปริมาณ']) || 1000,
         price: parseFloat(row['ราคา (Price THB)'] || row['Price'] || row['ราคา']) || 100,
         unit: row['หน่วย (Unit)'] || row['Unit'] || row['หน่วย'] || 'กรัม (g)',
         remark: row['หมายเหตุ (Remark)'] || row['Remark'] || ''
