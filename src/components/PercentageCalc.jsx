@@ -55,7 +55,7 @@ export default function PercentageCalc({ data, setData }) {
     // Summary strings exactly matching Excel CONCATENATE formula
     const summary1 = `${result} is ${pctOfTotal.toFixed(2)}% of ${total}`;
     const summary2 = `or ${pctOfTotal.toFixed(2)}% of ${total} is ${result}`;
-    const summary3 = `Diff: ${isImproved ? 'Improved' : 'Decreased'} by ${diffPct.toFixed(2)}% (from ${total} to ${result})`;
+    const summary3 = `ส่วนต่าง % (Diff %): ${isImproved ? 'Improved' : 'Decreased'} by ${diffPct.toFixed(2)}% (from ${total} to ${result})`;
 
     return {
       ...item,
@@ -67,7 +67,8 @@ export default function PercentageCalc({ data, setData }) {
       diffPct,
       isImproved,
       summary1,
-      summary2
+      summary2,
+      summary3
     };
   });
 
